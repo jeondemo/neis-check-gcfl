@@ -145,14 +145,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .inv-row .meta { font-size: 11px; color: #8894ba; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .inv-row .when { font-size: 10.5px; color: #8894ba; white-space: nowrap; flex: none; }
   .inv-row .del { border: none; background: none; color: #8894ba; cursor: pointer; font-size: 10.5px; padding: 0; text-decoration: underline; font-family: inherit; }
-  .inv-empty { border: 1.5px dashed rgba(150,175,240,.32); border-radius: 10px; padding: 15px 14px; text-align: center;
-    color: #b9c3e0; font-size: 12.5px; line-height: 1.7; }
+  .inv-empty { padding: 10px 8px 4px; text-align: center; color: #b9c3e0; font-size: 12.5px; line-height: 1.7; }
   .inv-empty b { color: #7fe3ab; font-weight: 700; }
   .inv-empty span { color: #8894ba; font-size: 11.5px; }
-  .mini-drop { margin-top: 10px; border: 1.5px dashed rgba(150,175,240,.32); border-radius: 10px; padding: 10px; text-align: center;
-    color: #b9c3e0; font-size: 12px; background: rgba(10,16,42,.3); cursor: pointer; transition: .15s; }
-  .mini-drop.over, .mini-drop:hover { background: rgba(30,45,100,.4); }
-  .mini-drop b { color: #e6ebfa; }
+  .set-drop { margin-top: 12px; border: 1.5px dashed rgba(150,175,240,.32); border-radius: 12px; padding: 10px; background: rgba(10,16,42,.3); transition: .15s; }
+  .set-drop.over { background: rgba(30,45,100,.45); border-color: rgba(140,165,240,.35); }
+  .set-add { margin-top: 8px; text-align: center; padding: 12px; border-radius: 9px; background: rgba(90,125,235,.16);
+    border: 1px solid rgba(140,165,240,.35); color: #e6ebfa; font-size: 13px; cursor: pointer; transition: .15s; }
+  .set-add:hover { background: rgba(30,45,100,.45); }
+  .set-add b { color: #9db8ff; font-weight: 800; }
+  .set-drop #set-inv { margin-top: 0; }
   #set-msg { margin-top: 8px; color: #ffcf9e; font-size: 12px; min-height: 16px; }
   .cv-safe { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: #8894ba; }
   .cv-safe svg { width: 13px; height: 13px; flex: none; }
@@ -362,11 +364,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </section>
 
     <div class="cv-col">
-    <section class="cv-panel">
+    <section class="cv-panel" id="panel-setting">
       <div class="p-head"><span class="p-num">1</span><h2>사전 세팅 데이터</h2><span class="saved-badge" id="set-badge">선택 사항</span></div>
       <div class="p-hint">담당과목표 · 수강명단 · 세팅데이터 — 한 번 올려두면 계속 적용</div>
-      <div id="set-inv"></div>
-      <div class="mini-drop" id="set-drop"><b>+ 세팅 파일 추가</b> — 끌어다 놓거나 클릭해서 선택</div>
+      <div class="set-drop" id="set-drop">
+        <div id="set-inv"></div>
+        <div class="set-add" id="set-add"><b>+ 세팅 파일 추가</b> — 이 카드 어디든 끌어다 놓거나 클릭해서 선택</div>
+      </div>
       <input type="file" id="set-input" accept=".xlsx,.xls" multiple hidden>
       <div id="set-msg"></div>
     </section>
@@ -1587,12 +1591,15 @@ $('#file-input').onchange = e => { addFiles([...e.target.files], 'data'); e.targ
 ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
 dz.addEventListener('drop', e => addFiles([...e.dataTransfer.files], 'data'));
-const sd = $('#set-drop');
-sd.onclick = () => $('#set-input').click();
+const sp = $('#panel-setting'); // ① 카드 전체가 드롭 대상
+$('#set-add').onclick = () => $('#set-input').click();
 $('#set-input').onchange = e => { addFiles([...e.target.files], 'setting'); e.target.value = ''; };
-['dragover', 'dragenter'].forEach(ev => sd.addEventListener(ev, e => { e.preventDefault(); sd.classList.add('over'); }));
-['dragleave', 'drop'].forEach(ev => sd.addEventListener(ev, e => { e.preventDefault(); sd.classList.remove('over'); }));
-sd.addEventListener('drop', e => addFiles([...e.dataTransfer.files], 'setting'));
+['dragover', 'dragenter'].forEach(ev => sp.addEventListener(ev, e => { e.preventDefault(); $('#set-drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => sp.addEventListener(ev, e => { e.preventDefault(); $('#set-drop').classList.remove('over'); }));
+sp.addEventListener('drop', e => addFiles([...e.dataTransfer.files], 'setting'));
+// 파일을 빈 곳에 잘못 놓아도 브라우저가 파일을 열어버리지 않도록
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
 loadSources();
 renderInv();
 
