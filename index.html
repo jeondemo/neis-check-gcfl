@@ -53,10 +53,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   #screen-drop { min-height: 100vh; display: flex; flex-direction: column; position: relative; overflow: hidden;
     background: radial-gradient(110% 130% at 82% 20%, #1e2e68 0%, #101a42 45%, #0a1029 100%); color: #eef1fb; }
   .serif { font-family: "Bodoni 72", "Bodoni MT", Didot, Georgia, "Times New Roman", serif; }
-  .wm { position: absolute; left: 50%; margin-left: -500px; top: 50%; transform: translateY(-50%); width: 740px; opacity: .12;
-    filter: brightness(1.25) saturate(.8); pointer-events: none;
-    -webkit-mask-image: radial-gradient(ellipse 62% 60% at 50% 48%, #000 40%, transparent 78%);
-    mask-image: radial-gradient(ellipse 62% 60% at 50% 48%, #000 40%, transparent 78%); }
+  .wm { position: absolute; left: 50%; margin-left: -500px; top: 50%; transform: translateY(-50%); height: 86vh; max-height: 880px; width: auto; opacity: .12;
+    filter: brightness(1.25) saturate(.8); pointer-events: none; }
   .gridlines { position: absolute; inset: 0; pointer-events: none;
     background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
     background-size: 76px 76px;
