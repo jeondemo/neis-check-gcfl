@@ -95,16 +95,16 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .cv-feat span { display: block; font-size: 10.5px; color: #8894ba; margin-top: 3px; white-space: nowrap; }
   @media (max-width: 1120px) { .cv-feats { flex-wrap: wrap; row-gap: 10px; } }
   .cv-panel { background: linear-gradient(160deg, rgba(30,42,95,.55), rgba(13,20,48,.75)); border: 1px solid rgba(150,175,240,.22);
-    border-radius: 24px; padding: 34px 34px 30px; backdrop-filter: blur(6px); box-shadow: 0 24px 60px rgba(4,8,26,.55); }
+    border-radius: 20px; padding: 22px 26px; backdrop-filter: blur(6px); box-shadow: 0 24px 60px rgba(4,8,26,.55); }
   .cv-panel h2 { font-size: 17px; font-weight: 800; letter-spacing: .5px; }
   .cv-panel .hint { font-size: 12.5px; color: #8894ba; margin-top: 5px; }
-  .dropzone { margin-top: 22px; border: 1.5px dashed rgba(150,175,240,.4); border-radius: 16px; padding: 34px 22px; text-align: center;
+  .dropzone { margin-top: 12px; border: 1.5px dashed rgba(150,175,240,.4); border-radius: 12px; padding: 20px 18px; text-align: center;
     background: rgba(10,16,42,.35); cursor: pointer; transition: .15s; }
   .dropzone.over, .dropzone:hover { background: rgba(30,45,100,.4); border-color: rgba(150,175,240,.7); }
   .dz-ic { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; background: rgba(90,125,235,.18);
     display: flex; align-items: center; justify-content: center; }
   .dz-ic svg { width: 24px; height: 24px; }
-  .dropzone strong { display: block; margin-top: 14px; font-size: 15px; font-weight: 700; color: #e6ebfa; }
+  .dropzone strong { display: block; font-size: 15px; font-weight: 700; color: #e6ebfa; }
   .dropzone .dz-hint { margin-top: 6px; font-size: 12.5px; color: #8894ba; }
   .dz-tags { display: flex; justify-content: center; gap: 7px; margin-top: 14px; flex-wrap: wrap; }
   .dz-tag { font-size: 11px; font-weight: 700; color: #aebdea; background: rgba(90,125,235,.16); border: 1px solid rgba(140,165,240,.22);
@@ -127,6 +127,34 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     letter-spacing: 6px; color: #fff; background: linear-gradient(135deg, #3d63e0, #2340ad); box-shadow: 0 12px 30px rgba(40,70,200,.45);
     cursor: pointer; font-family: inherit; text-indent: 6px; }
   #btn-run:disabled { background: rgba(90,125,235,.15); color: rgba(190,205,240,.35); box-shadow: none; cursor: not-allowed; }
+  /* ---- 카드 2단 (①세팅 / ②검사자료) ---- */
+  .cv-col { display: flex; flex-direction: column; gap: 14px; }
+  .p-head { display: flex; align-items: center; gap: 9px; }
+  .p-head h2 { font-size: 15px; font-weight: 800; letter-spacing: .3px; }
+  .p-num { width: 24px; height: 24px; border-radius: 50%; background: rgba(219,185,127,.18); border: 1px solid rgba(219,185,127,.45);
+    color: #dbb97f; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
+  .saved-badge { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 700;
+    color: #dbb97f; background: rgba(219,185,127,.1); border: 1px solid rgba(219,185,127,.35); border-radius: 99px; padding: 3px 10px; white-space: nowrap; }
+  .saved-badge.on { color: #7fe3ab; background: rgba(53,208,127,.12); border-color: rgba(53,208,127,.3); }
+  .p-hint { font-size: 11.5px; color: #8894ba; margin: 4px 0 0 33px; }
+  #set-inv { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .inv-row { display: flex; align-items: center; gap: 10px; background: rgba(16,24,58,.55); border: 1px solid rgba(150,175,240,.16);
+    border-radius: 10px; padding: 8px 13px; }
+  .inv-ic { width: 27px; height: 27px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; flex: none; background: rgba(53,208,127,.14); }
+  .inv-row b { font-size: 12.5px; color: #f0f3fc; font-weight: 700; }
+  .inv-row .meta { font-size: 11px; color: #8894ba; margin-top: 1px; }
+  .inv-row .when { margin-left: auto; font-size: 10.5px; color: #8894ba; text-align: right; line-height: 1.5; flex: none; }
+  .inv-row .del { border: none; background: none; color: #8894ba; cursor: pointer; font-size: 10.5px; padding: 0; text-decoration: underline; font-family: inherit; }
+  .inv-empty { border: 1.5px dashed rgba(150,175,240,.32); border-radius: 10px; padding: 15px 14px; text-align: center;
+    color: #b9c3e0; font-size: 12.5px; line-height: 1.7; }
+  .inv-empty b { color: #7fe3ab; font-weight: 700; }
+  .inv-empty span { color: #8894ba; font-size: 11.5px; }
+  .mini-drop { margin-top: 10px; border: 1.5px dashed rgba(150,175,240,.32); border-radius: 10px; padding: 10px; text-align: center;
+    color: #b9c3e0; font-size: 12px; background: rgba(10,16,42,.3); cursor: pointer; transition: .15s; }
+  .mini-drop.over, .mini-drop:hover { background: rgba(30,45,100,.4); }
+  .mini-drop b { color: #e6ebfa; }
+  #set-msg { margin-top: 8px; color: #ffcf9e; font-size: 12px; min-height: 16px; }
   .cv-safe { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-size: 12px; color: #8894ba; }
   .cv-safe svg { width: 13px; height: 13px; flex: none; }
   .cv-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 0 60px 30px; font-size: 12px; color: #6b779c; }
@@ -334,20 +362,24 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       </div>
     </section>
 
+    <div class="cv-col">
     <section class="cv-panel">
-      <h2>파일 업로드</h2>
-      <div class="hint">세특 · 창체 · 행동특성 · 수강명단 — 종류는 자동으로 구분됩니다</div>
+      <div class="p-head"><span class="p-num">1</span><h2>사전 세팅 데이터</h2><span class="saved-badge" id="set-badge">선택 사항</span></div>
+      <div class="p-hint">담당과목표 · 수강명단 · 세팅데이터 — 한 번 올려두면 계속 적용</div>
+      <div id="set-inv"></div>
+      <div class="mini-drop" id="set-drop"><b>+ 세팅 파일 추가</b> — 끌어다 놓거나 클릭해서 선택</div>
+      <input type="file" id="set-input" accept=".xlsx,.xls" multiple hidden>
+      <div id="set-msg"></div>
+    </section>
+
+    <section class="cv-panel">
+      <div class="p-head"><span class="p-num">2</span><h2>검사 자료 업로드</h2></div>
+      <div class="p-hint">세특 · 창체 · 행동특성 — 종류는 자동으로 구분됩니다</div>
       <div class="dropzone" id="dropzone">
-        <div class="dz-ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#7ea4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>
-          </svg>
-        </div>
         <strong>파일을 끌어다 놓거나 클릭해서 선택</strong>
         <div class="dz-hint">xlsx 여러 개를 한 번에 올릴 수 있습니다</div>
         <div class="dz-tags">
-          <span class="dz-tag">세부능력·특기사항</span><span class="dz-tag">창의적 체험활동</span>
-          <span class="dz-tag">행동특성</span><span class="dz-tag">수강명단</span><span class="dz-tag">담당과목표</span>
+          <span class="dz-tag">교과세부능력 특기사항</span><span class="dz-tag">창의적 체험활동</span><span class="dz-tag">행동특성</span>
         </div>
         <input type="file" id="file-input" accept=".xlsx,.xls" multiple hidden>
       </div>
@@ -358,9 +390,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <svg viewBox="0 0 24 24" fill="none" stroke="#35d07f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
         </svg>
-        학생 정보는 어디에도 저장·전송되지 않습니다
+        학생 정보는 어디에도 저장·전송되지 않습니다 (세팅 데이터만 이 브라우저에 보관)
       </div>
     </section>
+    </div>
   </main>
 
   <footer class="cv-foot cvz">
@@ -429,7 +462,7 @@ const NEISCheck = (() => {
 
   // 과목명 정규화: 공백·가운뎃점 제거 ("영어 독해와 작문" ≡ "영어독해와작문", "사회·문화" ≡ "사회문화")
   function normSubject(s) {
-    return String(s || '').replace(/[\s·ㆍ]/g, '');
+    return String(s || '').replace(/[\s·ㆍ]/g, '').replace(/Ⅰ/g, '1').replace(/Ⅱ/g, '2').replace(/Ⅲ/g, '3');
   }
 
   // 텍스트 정규화(유사도용): 공백·문장부호 제거
@@ -991,7 +1024,12 @@ const NEISCheck = (() => {
     for (const s of extra.subjects) {
       const k = s.grade + '|' + s.norm;
       if (!sMap.has(k)) { const c = { ...s }; sMap.set(k, c); out.subjects.push(c); }
-      else if (sMap.get(k).type === '대기' && s.type !== '대기') sMap.get(k).type = '명단';
+      else {
+        const cur = sMap.get(k);
+        if (cur.type === '대기' && s.type === '전체') cur.type = '전체';
+        else if (cur.type === '대기' && s.type !== '대기') cur.type = '명단';
+        if (!cur.sem && s.sem) cur.sem = s.sem;
+      }
     }
     const tSet = new Set(out.teachers.map(t => t.teacher + '|' + t.grade + '|' + t.norm + '|' + t.classes.join(',')));
     for (const t of (extra.teachers || [])) {
@@ -1028,8 +1066,15 @@ const NEISCheck = (() => {
     return setting;
   }
 
+
+  /* __COMMON_BEGIN__ 학교 공통과목 설정 — 과천외국어고등학교
+   * 1학년: 전 과목 공통(반 전원 수강). 2·3학년 공통과목 목록은 학교에서 받으면 추가.
+   */
+  const COMMON_SUBJECTS = { 1: 'ALL' };
+  /* __COMMON_END__ */
+
   // NEIS '교사별 담당과목 목록' (교사명|과목명|과정|학년|강의실) → 교사배정 + 개설과목(대기)
-  function parseTeacherList(sheets) {
+  function parseTeacherList(sheets, semHint) {
     const out = { subjects: [], roster: [], teachers: [], ok: false };
     const CC_SKIP = ['동아리활동', '자율자치활동', '자율활동', '진로활동', '봉사활동'];
     for (const rows of Object.values(sheets)) {
@@ -1066,7 +1111,19 @@ const NEISCheck = (() => {
       for (const e of map.values()) {
         out.teachers.push({ teacher: e.teacher, grade: e.grade, norm: e.norm, name: e.name, classes: [...e.classes], source: '담당과목표' });
         const sk = e.grade + '|' + e.norm;
-        if (!subjSeen.has(sk)) { subjSeen.add(sk); out.subjects.push({ grade: e.grade, name: e.name, norm: e.norm, type: '대기' }); }
+        if (!subjSeen.has(sk)) {
+          subjSeen.add(sk);
+          // 공통과목이면 '전체'(학년 전원 수강), 아니면 '대기'(명단 미확보)
+          let type = '대기', sem = 0;
+          const cfg = COMMON_SUBJECTS[e.grade];
+          if (cfg === 'ALL') type = '전체';
+          else if (cfg) for (const [s, list] of Object.entries(cfg)) if (list.includes(e.norm)) { type = '전체'; sem = +s; }
+          if (!sem && e.grade < 3) {
+            if (semHint) sem = semHint;
+            else { const m = e.norm.match(/[12]$/); if (m) sem = +m[0]; }
+          }
+          out.subjects.push({ grade: e.grade, name: e.name, norm: e.norm, type, sem });
+        }
       }
     }
     out.ok = out.subjects.length > 0;
@@ -1205,6 +1262,32 @@ const NEISCheck = (() => {
         }
       }
       const waitSet = new Set(setting.subjects.filter(s => s.type === '대기').map(s => s.grade + '|' + s.norm));
+      // 학기 감지(1·2학년: 2022 개정이라 학기별 과목명이 다름): 입력된 과목의 학기 태그로 자료의 학기를 판별,
+      // 한 학기 자료만 있으면 다른 학기 과목은 미입력 검사에서 제외 (3학년은 2015 개정: 1·2학기 과목명 동일 → 제외 없음)
+      const semOf = new Map();
+      for (const s of setting.subjects) if (s.sem) semOf.set(s.grade + '|' + s.norm, s.sem);
+      const semPresent = new Map();
+      for (const st of students) {
+        if (!st.grade || st.grade >= 3) continue;
+        for (const en of st.entries) if (en.type === '교과' && en.subject) {
+          const norm = normSubject(en.subject);
+          let sem = semOf.get(st.grade + '|' + norm);
+          if (!sem) { const m = norm.match(/[12]$/); if (m) sem = +m[0]; }
+          if (sem) {
+            if (!semPresent.has(st.grade)) semPresent.set(st.grade, new Set());
+            semPresent.get(st.grade).add(sem);
+          }
+        }
+      }
+      const exclSem = (grade, norm) => {
+        if (!grade || grade >= 3) return false;
+        const p = semPresent.get(grade);
+        if (!p || p.size !== 1) return false;
+        const other = [...p][0] === 1 ? 2 : 1;
+        let sem = semOf.get(grade + '|' + norm);
+        if (!sem) { const m = norm.match(/[12]$/); if (m) sem = +m[0]; }
+        return sem === other;
+      };
       const teacherOf = (grade, norm, classCode) => {
         const hits = setting.teachers.filter(t => t.grade === grade && t.norm === norm && (!classCode || !t.classes.length || t.classes.includes(classCode)));
         return [...new Set(hits.map(h => h.teacher))].join(', ') || null;
@@ -1215,8 +1298,8 @@ const NEISCheck = (() => {
         if (!st.sid) continue;
         const entered = new Set(st.entries.filter(e => e.type === '교과' && e.subject).map(e => normSubject(e.subject)));
         const expected = new Map(); // norm → name
-        for (const r of rosterBySid.get(st.sid) || []) expected.set(r.norm, r.name);
-        for (const s of wholeByGrade.get(st.grade) || []) expected.set(s.norm, s.name);
+        for (const r of rosterBySid.get(st.sid) || []) { if (!exclSem(st.grade, r.norm)) expected.set(r.norm, r.name); }
+        for (const s of wholeByGrade.get(st.grade) || []) { if (!exclSem(st.grade, s.norm)) expected.set(s.norm, s.name); }
         const missing = [], extra = [];
         for (const [norm, name] of expected) {
           const aggKey = norm + '|' + st.classCode;
@@ -1243,6 +1326,7 @@ const NEISCheck = (() => {
         for (const cc of classCodes) {
           const grade = +cc[0];
           if (s.grade !== grade) continue;
+          if (exclSem(grade, s.norm)) continue;
           const t = setting.teachers.find(t2 => t2.grade === grade && t2.norm === s.norm && t2.classes.includes(cc));
           if (!t) continue; // 이 반에 개설 안 됨
           const inClass = students.filter(x => x.classCode === cc);
@@ -1336,27 +1420,40 @@ function classifyWb(sheets) {
   }
   return sawClass ? 'setuk' : 'unknown';
 }
-async function addFiles(fileList) {
-  $('#drop-msg').textContent = '';
+async function readWb(f) {
+  const buf = await f.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array' });
+  return wbToSheets(wb);
+}
+const SETTING_KINDS = ['setting', 'roster', 'teacherlist'];
+const semFromName = n => /1\s*학기/.test(n) ? 1 : (/2\s*학기/.test(n) ? 2 : 0);
+function msgFor(t) { return t === 'setting' ? $('#set-msg') : $('#drop-msg'); }
+
+async function addFiles(fileList, target) { // target: 'data'(②) | 'setting'(①) — 어느 카드에 올렸는지
+  $('#drop-msg').textContent = ''; $('#set-msg').textContent = '';
   for (const f of fileList) {
-    if (!/\.xlsx?$/i.test(f.name)) { $('#drop-msg').textContent = `${f.name}: xlsx 파일이 아니라 건너뜀`; continue; }
+    if (!/\.xlsx?$/i.test(f.name)) { msgFor(target).textContent = `${f.name}: xlsx 파일이 아니라 건너뜀`; continue; }
     try {
-      const buf = await f.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array' });
-      const sheets = wbToSheets(wb);
+      const sheets = await readWb(f);
       const kind = classifyWb(sheets);
-      state.files.push({ name: f.name, kind, sheets });
+      if (SETTING_KINDS.includes(kind)) {
+        addSettingSource(f.name, kind, sheets);
+        if (target === 'data') $('#set-msg').textContent = `'${f.name}'은 세팅 데이터로 인식되어 ①에 저장했습니다`;
+      } else {
+        state.files.push({ name: f.name, kind, sheets });
+        if (target === 'setting') $('#drop-msg').textContent = `'${f.name}'은 검사 자료로 인식되어 ②에 추가했습니다`;
+      }
     } catch (e) {
-      $('#drop-msg').textContent = `${f.name}: 파일을 읽지 못했습니다 (${e.message})`;
+      msgFor(target).textContent = `${f.name}: 파일을 읽지 못했습니다 (${e.message})`;
     }
   }
   renderFileList();
 }
 function renderFileList() {
-  const kindLabel = { setuk: '세특', changche: '창체', haengteuk: '행동특성', setting: '세팅데이터', roster: '수강명단', teacherlist: '담당과목표', unknown: '인식 실패' };
+  const kindLabel = { setuk: '세특', changche: '창체', haengteuk: '행동특성', unknown: '인식 실패' };
   $('#file-list').innerHTML = state.files.map((f, i) => `
     <div class="file-row">
-      <span class="tag ${f.kind}">${kindLabel[f.kind]}</span>
+      <span class="tag ${f.kind}">${kindLabel[f.kind] || f.kind}</span>
       <span class="fname">${esc(f.name)}</span>
       <span class="fmeta">${Object.keys(f.sheets).length}시트</span>
       <button class="fdel" data-i="${i}" title="제거">✕</button>
@@ -1365,15 +1462,99 @@ function renderFileList() {
   const hasData = state.files.some(f => ['setuk', 'changche', 'haengteuk'].includes(f.kind));
   $('#btn-run').disabled = !hasData;
   if (state.files.some(f => f.kind === 'unknown'))
-    $('#drop-msg').textContent = '인식하지 못한 파일이 있습니다. 세특 다운로드 파일인지 확인해 주세요. (검사에서 제외됨)';
+    $('#drop-msg').textContent = '인식하지 못한 파일이 있습니다. NEIS에서 내려받은 원본 파일인지 확인해 주세요. (검사에서 제외됨)';
+}
+
+/* ---------- ① 사전 세팅 저장소 (이 브라우저에만 보관) ---------- */
+const SET_KEY = 'neisSettingV2';
+let setSources = [];
+function loadSources() {
+  try { const v = JSON.parse(localStorage.getItem(SET_KEY)); if (v && Array.isArray(v.sources)) { setSources = v.sources; return; } } catch (e) {}
+  setSources = [];
+  try { // 이전 버전(통합 저장) 마이그레이션
+    const old = JSON.parse(localStorage.getItem('neisSetting'));
+    if (old && old.data && old.data.ok) {
+      setSources.push({ id: 'legacy', name: '이전 버전에서 저장된 세팅', kind: 'setting', sem: 0, when: old.when || Date.now(), data: old.data });
+      saveSources();
+      localStorage.removeItem('neisSetting');
+    }
+  } catch (e) {}
+}
+function saveSources() {
+  try { localStorage.setItem(SET_KEY, JSON.stringify({ sources: setSources })); }
+  catch (e) { $('#set-msg').textContent = '브라우저 저장 공간이 부족해 세팅을 저장하지 못했습니다'; }
+}
+function parseSettingSource(kind, name, sheets) {
+  if (kind === 'setting') return NEISCheck.parseSetting(sheets);
+  if (kind === 'roster') return NEISCheck.parseRosterMatrix(sheets);
+  return NEISCheck.parseTeacherList(sheets, semFromName(name));
+}
+function addSettingSource(name, kind, sheets) {
+  const data = parseSettingSource(kind, name, sheets);
+  if (!data || !data.ok) { $('#set-msg').textContent = `'${name}': 세팅 정보를 읽지 못했습니다`; return; }
+  setSources = setSources.filter(s => s.name !== name); // 같은 파일명 재업로드 시 교체
+  setSources.push({ id: Date.now() + Math.random().toString(36).slice(2, 6), name, kind, sem: semFromName(name), when: Date.now(), data });
+  saveSources();
+  renderInv();
+}
+function mergedSetting() {
+  // 세팅데이터 → 담당과목표 → 수강명단 순서로 병합 (명단이 마지막이어야 '대기'가 '명단'으로 승격)
+  const order = { setting: 0, teacherlist: 1, roster: 2 };
+  let out = null;
+  for (const s of [...setSources].sort((a, b) => (order[a.kind] ?? 9) - (order[b.kind] ?? 9))) out = NEISCheck.mergeSettings(out, s.data);
+  return out;
+}
+function invSummary(s) {
+  const d = s.data, parts = [];
+  const t = new Set((d.teachers || []).map(x => x.teacher));
+  if (t.size) parts.push(`교사 ${t.size}명`);
+  const subj = new Set((d.subjects || []).map(x => x.grade + '|' + x.norm));
+  if (subj.size) parts.push(`과목 ${subj.size}개`);
+  if ((d.roster || []).length) parts.push(`명단 ${d.roster.length.toLocaleString()}건`);
+  return parts.join(' · ') || '내용 없음';
+}
+function invLabel(s) {
+  const base = { setting: '세팅데이터', roster: '수강명단', teacherlist: '교사별 담당과목표' }[s.kind] || '세팅';
+  return base + (s.sem ? ` · ${s.sem}학기` : '');
+}
+function renderInv() {
+  const badge = $('#set-badge');
+  if (!setSources.length) {
+    badge.textContent = '선택 사항'; badge.classList.remove('on');
+    $('#set-inv').innerHTML = `<div class="inv-empty">아직 저장된 세팅 데이터가 없습니다.<br><b>세팅 없이도 ②에 파일만 올리면 바로 검사할 수 있습니다.</b><br><span>담당과목표·수강명단을 올려두면 미입력 과목 검사와 담당 교사 표시가 추가됩니다.</span></div>`;
+    return;
+  }
+  badge.textContent = '● 이 브라우저에 저장됨'; badge.classList.add('on');
+  const ic = { setting: '🗂', roster: '🧑‍🎓', teacherlist: '📋' };
+  $('#set-inv').innerHTML = setSources.map(s => {
+    const d = new Date(s.when);
+    return `<div class="inv-row">
+      <span class="inv-ic">${ic[s.kind] || '🗂'}</span>
+      <div><b>${esc(invLabel(s))}</b><div class="meta">${esc(s.name)} — ${invSummary(s)}</div></div>
+      <span class="when">${d.getMonth() + 1}월 ${d.getDate()}일 저장<br><button class="del" data-id="${s.id}">삭제</button></span>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('#set-inv .del').forEach(b => b.onclick = () => {
+    setSources = setSources.filter(s => String(s.id) !== b.dataset.id);
+    saveSources();
+    renderInv();
+  });
 }
 
 const dz = $('#dropzone');
 dz.onclick = () => $('#file-input').click();
-$('#file-input').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+$('#file-input').onchange = e => { addFiles([...e.target.files], 'data'); e.target.value = ''; };
 ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('over'); }));
 ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('over'); }));
-dz.addEventListener('drop', e => addFiles([...e.dataTransfer.files]));
+dz.addEventListener('drop', e => addFiles([...e.dataTransfer.files], 'data'));
+const sd = $('#set-drop');
+sd.onclick = () => $('#set-input').click();
+$('#set-input').onchange = e => { addFiles([...e.target.files], 'setting'); e.target.value = ''; };
+['dragover', 'dragenter'].forEach(ev => sd.addEventListener(ev, e => { e.preventDefault(); sd.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => sd.addEventListener(ev, e => { e.preventDefault(); sd.classList.remove('over'); }));
+sd.addEventListener('drop', e => addFiles([...e.dataTransfer.files], 'setting'));
+loadSources();
+renderInv();
 
 $('#btn-run').onclick = () => {
   const parserOf = { setuk: NEISCheck.parseSetuk, changche: NEISCheck.parseChangche, haengteuk: NEISCheck.parseHaengteuk };
@@ -1384,20 +1565,7 @@ $('#btn-run').onclick = () => {
     for (const rows of Object.values(f.sheets)) lists.push(parse(rows));
   }
   const students = NEISCheck.mergeStudents(lists);
-  const settingFile = state.files.find(f => f.kind === 'setting');
-  state.setting = settingFile ? NEISCheck.parseSetting(settingFile.sheets) : null;
-  if (state.setting && state.setting.ok) {
-    try { localStorage.setItem('neisSetting', JSON.stringify({ when: Date.now(), data: state.setting })); } catch (e) {}
-  } else if (!state.setting) {
-    try { const sv = JSON.parse(localStorage.getItem('neisSetting')); if (sv && sv.data && sv.data.ok) state.setting = sv.data; } catch (e) {}
-  }
-  const tlFiles = state.files.filter(f => f.kind === 'teacherlist');
-  for (const tf of tlFiles) state.setting = NEISCheck.mergeSettings(state.setting, NEISCheck.parseTeacherList(tf.sheets));
-  const rosterFiles = state.files.filter(f => f.kind === 'roster');
-  for (const rf of rosterFiles) state.setting = NEISCheck.mergeSettings(state.setting, NEISCheck.parseRosterMatrix(rf.sheets));
-  if ((rosterFiles.length || tlFiles.length) && state.setting && state.setting.ok) {
-    try { localStorage.setItem('neisSetting', JSON.stringify({ when: Date.now(), data: state.setting })); } catch (e) {}
-  }
+  state.setting = mergedSetting();
   state.students = students;
   if (!students.length) { $('#drop-msg').textContent = '학생 데이터를 찾지 못했습니다. NEIS에서 내려받은 원본 파일인지 확인해 주세요.'; return; }
   state.res = NEISCheck.runChecks(students, state.setting);
@@ -1406,17 +1574,6 @@ $('#btn-run').onclick = () => {
   renderMain();
 };
 $('#btn-reset').onclick = () => location.reload();
-try {
-  const sv = JSON.parse(localStorage.getItem('neisSetting'));
-  if (sv && sv.data && sv.data.ok) {
-    const d = new Date(sv.when);
-    const div = document.createElement('div');
-    div.style.cssText = 'margin-top:14px;font-size:13px;color:#9fb4e8;position:relative';
-    div.innerHTML = `💾 저장된 세팅데이터가 있어 세특 파일만 올려도 자동 적용됩니다 (${d.getMonth() + 1}월 ${d.getDate()}일 저장) <button id="del-setting" style="border:1px solid var(--line);background:none;border-radius:6px;padding:2px 8px;margin-left:6px;cursor:pointer;color:var(--faint)">삭제</button>`;
-    $('#file-list').before(div);
-    $('#del-setting').onclick = () => { localStorage.removeItem('neisSetting'); div.remove(); };
-  }
-} catch (e) {}
 
 /* ---------- 메인 렌더 ---------- */
 function classesOf() { return [...new Set(state.students.map(s => s.classCode).filter(Boolean))].sort(); }
