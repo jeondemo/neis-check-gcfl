@@ -732,7 +732,7 @@ const NEISCheck = (() => {
     for (const row of rows) {
       const texts = row.map(cellStr);
       // 반 헤더 (셀 내용이 "N학년 M반" 자체인 경우만 — 본문 속 언급 오인 방지)
-      const clsIdx = texts.findIndex(t => /^\s*\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
+      const clsIdx = texts.findIndex(t => /^\s*[가-힣A-Za-z·\s]{0,24}?\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
       if (clsIdx !== -1 && texts.filter(t => t.trim()).length <= 3) {
         const m = texts[clsIdx].match(classRe);
         curClass = { grade: +m[1], klass: +m[2] };
@@ -867,7 +867,7 @@ const NEISCheck = (() => {
     const map = new Map(); const order = [];
     for (const row of rows) {
       const texts = row.map(cellStr);
-      const clsIdx = texts.findIndex(t => /^\s*\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
+      const clsIdx = texts.findIndex(t => /^\s*[가-힣A-Za-z·\s]{0,24}?\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
       if (clsIdx !== -1 && texts.filter(t => t.trim()).length <= 3) {
         const m = texts[clsIdx].match(/(\d)\s*학년\s*(\d{1,2})\s*반/);
         curClass = { grade: +m[1], klass: +m[2] };
@@ -940,7 +940,7 @@ const NEISCheck = (() => {
     const map = new Map(); const order = [];
     for (const row of rows) {
       const texts = row.map(cellStr);
-      const clsIdx = texts.findIndex(t => /^\s*\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
+      const clsIdx = texts.findIndex(t => /^\s*[가-힣A-Za-z·\s]{0,24}?\d\s*학년\s*\d{1,2}\s*반\s*$/.test(t));
       if (clsIdx !== -1 && texts.filter(t => t.trim()).length <= 3) {
         const m = texts[clsIdx].match(/(\d)\s*학년\s*(\d{1,2})\s*반/);
         curClass = { grade: +m[1], klass: +m[2] };
