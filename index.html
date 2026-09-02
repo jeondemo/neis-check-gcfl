@@ -117,7 +117,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
   .tag.changche { background: rgba(90,125,235,.25); color: #aec4ff; }
   .tag.haengteuk { background: rgba(90,125,235,.25); color: #aec4ff; }
   .tag.setting { background: rgba(53,208,127,.18); color: #7fe3ab; }
-  .tag.roster { background: rgba(53,208,127,.18); color: #7fe3ab; }
+  .tag.roster, .tag.teacherlist { background: rgba(53,208,127,.18); color: #7fe3ab; }
   .tag.unknown { background: rgba(230,90,90,.22); color: #ffb0a8; }
   .file-row .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #dfe6fb; font-size: 13px; }
   .file-row .fmeta { color: #8894ba; font-size: 12px; }
@@ -347,7 +347,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <div class="dz-hint">xlsx 여러 개를 한 번에 올릴 수 있습니다</div>
         <div class="dz-tags">
           <span class="dz-tag">세부능력·특기사항</span><span class="dz-tag">창의적 체험활동</span>
-          <span class="dz-tag">행동특성</span><span class="dz-tag">수강명단</span>
+          <span class="dz-tag">행동특성</span><span class="dz-tag">수강명단</span><span class="dz-tag">담당과목표</span>
         </div>
         <input type="file" id="file-input" accept=".xlsx,.xls" multiple hidden>
       </div>
@@ -991,7 +991,12 @@ const NEISCheck = (() => {
     for (const s of extra.subjects) {
       const k = s.grade + '|' + s.norm;
       if (!sMap.has(k)) { const c = { ...s }; sMap.set(k, c); out.subjects.push(c); }
-      else if (sMap.get(k).type === '대기') sMap.get(k).type = '명단';
+      else if (sMap.get(k).type === '대기' && s.type !== '대기') sMap.get(k).type = '명단';
+    }
+    const tSet = new Set(out.teachers.map(t => t.teacher + '|' + t.grade + '|' + t.norm + '|' + t.classes.join(',')));
+    for (const t of (extra.teachers || [])) {
+      const k = t.teacher + '|' + t.grade + '|' + t.norm + '|' + t.classes.join(',');
+      if (!tSet.has(k)) { tSet.add(k); out.teachers.push({ ...t }); }
     }
     return out;
   }
@@ -1023,6 +1028,51 @@ const NEISCheck = (() => {
     return setting;
   }
 
+  // NEIS '교사별 담당과목 목록' (교사명|과목명|과정|학년|강의실) → 교사배정 + 개설과목(대기)
+  function parseTeacherList(sheets) {
+    const out = { subjects: [], roster: [], teachers: [], ok: false };
+    const CC_SKIP = ['동아리활동', '자율자치활동', '자율활동', '진로활동', '봉사활동'];
+    for (const rows of Object.values(sheets)) {
+      let hi = -1, ci = null;
+      for (let i = 0; i < Math.min(rows.length, 12); i++) {
+        const r = (rows[i] || []).map(v => v == null ? '' : String(v).replace(/\s/g, ''));
+        const t = r.indexOf('교사명'), s = r.indexOf('과목명');
+        if (t >= 0 && s >= 0) {
+          hi = i;
+          ci = { t, s, g: r.findIndex(x => x.includes('학년')), r: r.findIndex(x => x.includes('강의실')) };
+          break;
+        }
+      }
+      if (hi < 0) continue;
+      const map = new Map();
+      for (let i = hi + 1; i < rows.length; i++) {
+        const row = rows[i] || [];
+        const teacher = row[ci.t] == null ? '' : String(row[ci.t]).trim();
+        const subj = row[ci.s] == null ? '' : String(row[ci.s]).trim();
+        if (!teacher || !subj) continue;
+        const subjN = subj.replace(/[\s·]/g, '');
+        if (CC_SKIP.some(c => subjN.includes(c.replace(/[\s·]/g, '')))) continue; // 창체는 제외
+        const gtxt = ci.g >= 0 && row[ci.g] != null ? String(row[ci.g]) : '';
+        const gm = gtxt.match(/(\d)\s*학년/);
+        if (!gm) continue;
+        const grade = +gm[1];
+        const room = ci.r >= 0 && row[ci.r] != null ? String(row[ci.r]).trim() : '';
+        const rn = room.match(/^(\d{1,2})(\.0)?$/); // 숫자면 반, 아니면 선택과목 강의실명
+        const key = teacher + '|' + grade + '|' + normSubject(subj);
+        if (!map.has(key)) map.set(key, { teacher, grade, norm: normSubject(subj), name: subj, classes: new Set() });
+        if (rn) map.get(key).classes.add(String(grade) + String(+rn[1])); // classCode 형식: 학년+반 (예: '21' = 2학년 1반)
+      }
+      const subjSeen = new Set();
+      for (const e of map.values()) {
+        out.teachers.push({ teacher: e.teacher, grade: e.grade, norm: e.norm, name: e.name, classes: [...e.classes], source: '담당과목표' });
+        const sk = e.grade + '|' + e.norm;
+        if (!subjSeen.has(sk)) { subjSeen.add(sk); out.subjects.push({ grade: e.grade, name: e.name, norm: e.norm, type: '대기' }); }
+      }
+    }
+    out.ok = out.subjects.length > 0;
+    return out;
+  }
+
   /* ---------- 검사 실행 ---------- */
   function runChecks(students, setting) {
     const res = { forbidden: [], length: [], style: [], similarity: [], typos: [], missing: null, students };
@@ -1031,7 +1081,7 @@ const NEISCheck = (() => {
     if (setting && setting.ok && setting.teachers.length) {
       for (const st of students) for (const en of st.entries) {
         if (en.type === '교과' && en.subject && st.grade != null) {
-          const hits = setting.teachers.filter(t => t.grade === st.grade && t.norm === normSubject(en.subject) && (!st.classCode || t.classes.includes(st.classCode)));
+          const hits = setting.teachers.filter(t => t.grade === st.grade && t.norm === normSubject(en.subject) && (!st.classCode || !t.classes.length || t.classes.includes(st.classCode)));
           if (hits.length) en.teacher = [...new Set(hits.map(h => h.teacher))].join(', ');
         }
       }
@@ -1156,8 +1206,8 @@ const NEISCheck = (() => {
       }
       const waitSet = new Set(setting.subjects.filter(s => s.type === '대기').map(s => s.grade + '|' + s.norm));
       const teacherOf = (grade, norm, classCode) => {
-        const hits = setting.teachers.filter(t => t.grade === grade && t.norm === norm && (!classCode || t.classes.includes(classCode)));
-        return hits.map(h => h.teacher).join(', ') || null;
+        const hits = setting.teachers.filter(t => t.grade === grade && t.norm === norm && (!classCode || !t.classes.length || t.classes.includes(classCode)));
+        return [...new Set(hits.map(h => h.teacher))].join(', ') || null;
       };
       const perStudent = [];   // { st, missing: [subjName], extra: [subjName] }
       const subjAgg = new Map(); // norm|classCode → { name, classCode, grade, enrolled, entered, missingStudents[], teacher, isWait }
@@ -1232,7 +1282,7 @@ const NEISCheck = (() => {
     return { sa, sb, hitA, hitB };
   }
 
-  return { neisBytes, normSubject, normText, trigrams, jaccard, splitSentences, parseSetuk, parseChangche, parseHaengteuk, mergeStudents, parseSetting, parseRosterMatrix, mergeSettings, runChecks, sentenceOverlap, limitFor, RULES, LIMITS, STYLE_WORDS, REPEAT_WORD };
+  return { neisBytes, normSubject, normText, trigrams, jaccard, splitSentences, parseSetuk, parseChangche, parseHaengteuk, mergeStudents, parseSetting, parseTeacherList, parseRosterMatrix, mergeSettings, runChecks, sentenceOverlap, limitFor, RULES, LIMITS, STYLE_WORDS, REPEAT_WORD };
 })();
 if (typeof module !== 'undefined') module.exports = NEISCheck;
 
@@ -1279,6 +1329,8 @@ function classifyWb(sheets) {
       if (joined.includes('세부능력')) return 'setuk';
       const nr = (row || []).map(v => v == null ? '' : String(v).replace(/\s/g, ''));
       if (nr.includes('학번') && (nr.includes('이름') || nr.includes('성명'))) return 'roster';
+      if (joined.replace(/\s/g, '').includes('교사별담당과목')) return 'teacherlist';
+      if (nr.includes('교사명') && nr.includes('과목명')) return 'teacherlist';
       if (/\d\s*학년\s*\d{1,2}\s*반/.test(joined)) sawClass = true;
     }
   }
@@ -1301,7 +1353,7 @@ async function addFiles(fileList) {
   renderFileList();
 }
 function renderFileList() {
-  const kindLabel = { setuk: '세특', changche: '창체', haengteuk: '행동특성', setting: '세팅데이터', roster: '수강명단', unknown: '인식 실패' };
+  const kindLabel = { setuk: '세특', changche: '창체', haengteuk: '행동특성', setting: '세팅데이터', roster: '수강명단', teacherlist: '담당과목표', unknown: '인식 실패' };
   $('#file-list').innerHTML = state.files.map((f, i) => `
     <div class="file-row">
       <span class="tag ${f.kind}">${kindLabel[f.kind]}</span>
@@ -1339,10 +1391,12 @@ $('#btn-run').onclick = () => {
   } else if (!state.setting) {
     try { const sv = JSON.parse(localStorage.getItem('neisSetting')); if (sv && sv.data && sv.data.ok) state.setting = sv.data; } catch (e) {}
   }
+  const tlFiles = state.files.filter(f => f.kind === 'teacherlist');
+  for (const tf of tlFiles) state.setting = NEISCheck.mergeSettings(state.setting, NEISCheck.parseTeacherList(tf.sheets));
   const rosterFiles = state.files.filter(f => f.kind === 'roster');
-  if (rosterFiles.length) {
-    for (const rf of rosterFiles) state.setting = NEISCheck.mergeSettings(state.setting, NEISCheck.parseRosterMatrix(rf.sheets));
-    if (state.setting && state.setting.ok) { try { localStorage.setItem('neisSetting', JSON.stringify({ when: Date.now(), data: state.setting })); } catch (e) {} }
+  for (const rf of rosterFiles) state.setting = NEISCheck.mergeSettings(state.setting, NEISCheck.parseRosterMatrix(rf.sheets));
+  if ((rosterFiles.length || tlFiles.length) && state.setting && state.setting.ok) {
+    try { localStorage.setItem('neisSetting', JSON.stringify({ when: Date.now(), data: state.setting })); } catch (e) {}
   }
   state.students = students;
   if (!students.length) { $('#drop-msg').textContent = '학생 데이터를 찾지 못했습니다. NEIS에서 내려받은 원본 파일인지 확인해 주세요.'; return; }
