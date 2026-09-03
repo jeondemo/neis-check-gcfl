@@ -371,7 +371,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="cv-desc">NEIS에서 내려받은 파일을 올리면 <b>이 브라우저 안에서만</b><br>다섯 가지 항목을 한 번에 검사합니다.</div>
       <div class="cv-feats">
         <div class="cv-feat"><b>기재금지어</b><span>금지 14종 · 주의 5종</span></div>
-        <div class="cv-feat"><b>분량</b><span>1,500 · 2,100 바이트</span></div>
+        <div class="cv-feat"><b>분량</b><span>학년별 900~2,100B</span></div>
         <div class="cv-feat"><b>유사도</b><span>학생 간 문장 비교</span></div>
         <div class="cv-feat"><b>문체·오탈자</b><span>클리셰 · 맞춤법</span></div>
         <div class="cv-feat"><b>미입력</b><span>과목 · 창체 영역</span></div>
@@ -512,7 +512,8 @@ const NEISCheck = (() => {
 
   const LIMITS = {
     maxBytes: 1500,   // 기본 상한: 세특·자율·동아리·행동특성 (500자 = 1,500B)
-    maxBytesJinro: 2100, // 진로활동 특기사항 상한 (700자 = 2,100B)
+    maxBytesJinro: 2100, // 진로활동 상한 — 3학년(2015 개정): 700자 = 2,100B / 1·2학년(2022 개정, 2026~): 500자 = 1,500B
+    maxBytesHaeng22: 900, // 행동특성·종합의견 상한 — 1·2학년(2022 개정, 2026~): 300자 = 900B / 3학년: 500자 = 1,500B
     minBytes: 800,    // 분량 부족 주의 기준 (교과 세특에만 적용)
     simDanger: 0.60,  // 유사도 위험
     simWarn: 0.35,    // 유사도 주의
@@ -520,8 +521,11 @@ const NEISCheck = (() => {
   };
 
   // 항목별 바이트 상한
-  function limitFor(entry) {
-    if (entry.type === '창체' && /진로/.test(entry.label)) return LIMITS.maxBytesJinro;
+  // 학년별 상한 (2026학년도 기준): 1·2학년(2022 개정) 진로 1,500B·행특 900B / 3학년(2015 개정) 진로 2,100B·행특 1,500B
+  function limitFor(entry, grade) {
+    const is12 = grade === 1 || grade === 2;
+    if (entry.type === '창체' && /진로/.test(entry.label)) return is12 ? LIMITS.maxBytes : LIMITS.maxBytesJinro;
+    if (entry.type === '행특') return is12 ? LIMITS.maxBytesHaeng22 : LIMITS.maxBytes;
     return LIMITS.maxBytes;
   }
 
@@ -1244,8 +1248,8 @@ const NEISCheck = (() => {
             });
           }
         }
-        // 분량 (상한은 항목별: 진로활동 2,100B, 나머지 1,500B / 하한은 교과 세특에만)
-        const cap = limitFor(en);
+        // 분량 (상한은 항목·학년별 / 하한은 교과 세특에만)
+        const cap = limitFor(en, st.grade);
         if (en.bytes > cap) res.length.push({ st, entry: en, kind: 'over', diff: en.bytes - cap, cap });
         else if (en.type === '교과' && en.subject && en.bytes < LIMITS.minBytes) res.length.push({ st, entry: en, kind: 'under', diff: LIMITS.minBytes - en.bytes, cap });
         // 문체
@@ -1841,7 +1845,7 @@ function renderForbidden() {
 
 function renderLength() {
   const r = state.res, L = NEISCheck.LIMITS;
-  let html = `<div class="section-note">상한(한글 3B·영문/숫자 1B): 교과 세특·자율·동아리·행동특성 ${L.maxBytes.toLocaleString()}B, 진로활동 ${L.maxBytesJinro.toLocaleString()}B · 교과 세특 ${L.minBytes.toLocaleString()}B 미만은 분량 부족 주의</div>`;
+  let html = `<div class="section-note">상한(한글 3B·영문/숫자 1B): 교과 세특·자율·동아리 1,500B · 진로활동 1·2학년 1,500B/3학년 2,100B · 행동특성 1·2학년 900B/3학년 1,500B · 교과 세특 ${L.minBytes.toLocaleString()}B 미만은 분량 부족 주의</div>`;
   if (!r.length.length) { $('#panel-length').innerHTML = html + '<div class="empty"><div class="big">✅</div>분량 기준을 벗어난 항목이 없습니다.</div>'; return; }
   const list = [...r.length].sort((a, b) => (a.kind === b.kind ? b.diff - a.diff : a.kind === 'over' ? -1 : 1));
   $('#panel-length').innerHTML = html + list.map(l => `
@@ -1981,7 +1985,7 @@ function drawStudent(st, iss) {
   if (iss.miss.length) html += `<div class="issue"><div class="issue-head"><span class="pill warn">미입력</span><span class="subj">아직 세특이 없는 과목</span></div><div class="issue-body"><b>${iss.miss.map(esc).join(', ')}</b></div></div>`;
   if (iss.blanks.length) html += `<div class="issue"><div class="issue-head"><span class="pill warn">미작성</span><span class="subj">비어 있는 창체·행동특성 항목</span></div><div class="issue-body"><b>${iss.blanks.map(b => esc(b.label) + (b.hours ? ` (${b.hours}시간)` : '')).join(', ')}</b></div></div>`;
   html += st.entries.map(en => {
-    const cap = NEISCheck.limitFor(en);
+    const cap = NEISCheck.limitFor(en, st.grade);
     const marks = iss.f.filter(x => x.entry === en).map(x => x.match);
     let body = esc(en.body);
     for (const m of [...new Set(marks)]) body = body.split(esc(m)).join(`<mark>${esc(m)}</mark>`);
