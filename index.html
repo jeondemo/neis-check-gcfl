@@ -1822,8 +1822,9 @@ const NEISCheck = (() => {
         }
         for (const norm of entered) {
           if (!expected.has(norm) && !waitSet.has(st.grade + '|' + norm)) {
-            const name = st.entries.find(e => e.subject && normSubject(e.subject) === norm).subject;
-            extra.push(name);
+            // 합산 기록의 구성 과목(공통국어1 등)은 실제 항목이 없으므로 건너뜀
+            const hit = st.entries.find(e => e.subject && normSubject(e.subject) === norm);
+            if (hit) extra.push(hit.subject);
           }
         }
         perStudent.push({ st, missing, extra });
