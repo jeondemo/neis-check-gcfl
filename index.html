@@ -718,9 +718,13 @@ const NEISCheck = (() => {
   /* ---------- 공통 유틸 ---------- */
 
   // NEIS 바이트 계산: 한글 등 비ASCII 3바이트, ASCII 1바이트
+  // NEIS 바이트 = UTF-8 실제 길이 (한글 3B, 영문·숫자·기호 1B, 가운뎃점(·)·라틴 확장 2B, 이모지 4B)
   function neisBytes(s) {
     let b = 0;
-    for (const ch of s) b += ch.codePointAt(0) > 127 ? 3 : 1;
+    for (const ch of String(s || '')) {
+      const c = ch.codePointAt(0);
+      b += c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4;
+    }
     return b;
   }
 
