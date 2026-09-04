@@ -211,7 +211,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .sb-sub { font-size: 10px; letter-spacing: 3.5px; color: rgba(175,190,230,.45); font-weight: 600; margin-top: 6px; }
   .sb-scope { margin-top: 20px; border: 1px solid rgba(160,180,235,.22); background: rgba(13,19,48,.45); border-radius: 14px; padding: 12px 15px; }
   .sb-scope .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 3px 0; font-size: 12.5px; color: #b1bce0; }
-  .sb-scope .row b { color: #f3f6fe; font-weight: 700; text-align: right; }
+  .sb-scope .row > span:first-child { flex: none; white-space: nowrap; }
+  .sb-scope .row b { color: #f3f6fe; font-weight: 700; text-align: right; min-width: 0; }
   .sb-scope .row .off { color: #7ea4ff; font-weight: 700; }
   nav.tabs { margin-top: 20px; display: flex; flex-direction: column; gap: 3px; position: relative; }
   nav.tabs button { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 11px; border: none; background: none;
@@ -486,6 +487,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .acc .achx .hot { color: #ffb4a8; border-color: rgba(255,140,120,.5); }
   .acc .achx .warm { color: #f2d492; border-color: rgba(232,182,76,.5); }
   .acc .achx .ok { color: #8fe3b2; border-color: rgba(53,208,127,.45); }
+  .acc .gb { position: relative; flex: none; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #101a3d; border-radius: 8px;
+    padding: 4px 10px; background: linear-gradient(140deg, #e8cfa0, #c9a45f); }
+  .acc h3 small { font-weight: 700; color: rgba(175,190,230,.55); font-size: 12px; margin-left: 6px; }
+  .acc.cc2 .gb { background: linear-gradient(140deg, #9fd8b8, #5aa87e); color: #0f2b1f; }
   .acc .chev { position: relative; flex: none; width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center;
     justify-content: center; color: #e8cfa0; background: rgba(217,190,134,.14); border: 1px solid rgba(217,190,134,.4); }
   .acc .chev svg { width: 12px; height: 12px; transition: transform .2s; }
@@ -1335,7 +1340,9 @@ const NEISCheck = (() => {
         const cur = sMap.get(k);
         if (cur.type === '대기' && s.type === '전체') cur.type = '전체';
         else if (cur.type === '대기' && s.type !== '대기') cur.type = '명단';
+        // 1·2학기 편제 양쪽에 같은 이름으로 있는 과목(미술·음악처럼 반마다 듣는 학기가 다름)은 학기 구분 없음으로
         if (!cur.sem && s.sem) cur.sem = s.sem;
+        else if (cur.sem && s.sem && cur.sem !== s.sem) cur.sem = 0;
       }
     }
     const tSet = new Set(out.teachers.map(t => t.teacher + '|' + t.grade + '|' + t.norm + '|' + t.classes.join(',')));
@@ -2021,7 +2028,7 @@ function renderMain() {
   const kindNames = { setuk: '세특', changche: '창체', haengteuk: '행동특성' };
   const kinds = [...new Set(state.files.map(f => kindNames[f.kind]).filter(Boolean))].join('·');
   $('#scope-rows').innerHTML = `
-    <div class="row"><span>대상</span><b>${classes.map(fmtClass).join(', ')}</b></div>
+    <div class="row"><span>대상</span><b>${clsCompress(new Set(classes))}</b></div>
     <div class="row"><span>학생</span><b>${state.students.length}명</b></div>
     <div class="row"><span>자료</span><b>${kinds}</b></div>
     <div class="row"><span>세팅데이터</span><b>${state.setting?.ok ? '연동됨' : '없음'}</b></div>
@@ -2344,21 +2351,21 @@ function renderDash() {
     return 0;
   };
   if (state.mats.length) {
-    html += `<div class="shead" style="margin-top:0"><span class="tick"></span><h2>업로드된 자료</h2><span class="note">학기를 누르면 과목 카드가 펼쳐집니다 — 접힌 상태에서도 문제 요약이 보입니다</span><span class="line"></span></div>`;
+    html += `<div class="shead" style="margin-top:0"><span class="tick"></span><h2>업로드된 자료</h2><span class="note">학년·학기를 누르면 과목 카드가 펼쳐집니다 — 접힌 상태에서도 문제 요약이 보입니다</span><span class="line"></span></div>`;
     const subjIdx = [], cchtIdx = [];
     state.mats.forEach((m, i) => (m.cls === 'cc' ? cchtIdx : subjIdx).push(i));
-    const allG3 = subjIdx.length > 0 && subjIdx.every(i => state.mats[i].grade === 3);
     if (!state.accOpen) state.accOpen = new Set();
     const groupChips = idxs => {
       const merged = { f: [], l: [], sty: [], ty: [], end: [], sim: [], blanks: [], missCls: [] };
       idxs.forEach(i => { const x = state.mats[i].iss; Object.keys(merged).forEach(k => merged[k].push(...(x[k] || []))); });
       return matChips(merged);
     };
-    const accSec = (key, label, cntText, idxs, green) => {
+    const accSec = (key, badge, label, sub, cntText, idxs, green) => {
       const open = state.accOpen.has(key);
       return `<button class="acc${green ? ' cc2' : ''}${open ? ' open' : ''}" data-g="${key}">
           <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></span>
-          <h3>${label}</h3><span class="acnt">${cntText}</span>
+          ${badge ? `<span class="gb">${badge}</span>` : ''}
+          <h3>${label}${sub ? `<small>${sub}</small>` : ''}</h3><span class="acnt">${cntText}</span>
           <span class="achx">${groupChips(idxs)}</span>
         </button>
         <div class="acc-body" data-gb="${key}"${open ? '' : ' hidden'}>
@@ -2370,20 +2377,33 @@ function renderDash() {
         </div>`;
     };
     if (subjIdx.length) {
-      if (allG3) {
-        html += accSec('g3', '3학년 과목', subjIdx.length + '과목', subjIdx, false);
-      } else {
-        const g1 = subjIdx.filter(i => semForMat(state.mats[i]) === 1);
-        const g2 = subjIdx.filter(i => semForMat(state.mats[i]) === 2);
-        const g0 = subjIdx.filter(i => semForMat(state.mats[i]) === 0);
-        for (const [key, label, idxs] of [['s1', '1학기 과목', g1], ['s2', '2학기 과목', g2], ['s0', '학기 구분 없음', g0]]) {
-          if (!idxs.length) continue;
-          html += accSec(key, label, idxs.length + '과목', idxs, false);
-        }
+      // 학년 + 학기 헤드카드: 1학년 1학기 → 1학년 2학기 → 1학년 구분없음 → 2학년… → 3학년(연간)
+      const groups = new Map();
+      for (const i of subjIdx) {
+        const m = state.mats[i];
+        const g = m.grade != null ? m.grade : '?';
+        const sem = g === 3 ? 0 : semForMat(m);
+        const key = `g${g}s${sem}`;
+        if (!groups.has(key)) groups.set(key, { grade: g, sem, idxs: [] });
+        groups.get(key).idxs.push(i);
+      }
+      const rankSem = s => s === 1 ? 0 : (s === 2 ? 1 : 2);
+      const sorted = [...groups.values()].sort((a, b) => {
+        const ga = a.grade === '?' ? 9 : a.grade, gb = b.grade === '?' ? 9 : b.grade;
+        return ga - gb || rankSem(a.sem) - rankSem(b.sem);
+      });
+      for (const gr of sorted) {
+        const key = `g${gr.grade}s${gr.sem}`;
+        const badge = gr.grade === '?' ? '학년 미상' : `${gr.grade}학년`;
+        let label = '학기 구분 없음', sub = '';
+        if (gr.grade === 3) { label = '3학년 과목'; sub = '연간 · 학기 구분 없음'; }
+        else if (gr.sem === 1) label = '1학기 과목';
+        else if (gr.sem === 2) label = '2학기 과목';
+        html += accSec(key, badge, label, sub, gr.idxs.length + '과목', gr.idxs, false);
       }
     }
     if (cchtIdx.length) {
-      html += accSec('cc', '창체 · 행동특성', cchtIdx.length + '개 반', cchtIdx, true);
+      html += accSec('cc', '전체', '창체 · 행동특성', '', cchtIdx.length + '개 반', cchtIdx, true);
     }
   }
   const forbid = r.forbidden.filter(f => f.rule.grade === '금지').length;
