@@ -515,6 +515,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .hd .tchs2 { font-size: 12px; color: #e6c9a8; font-weight: 700; }
   .hd .tchs2 i { font-style: normal; color: rgba(230,200,150,.55); font-weight: 600; margin-right: 5px; font-size: 10.5px; letter-spacing: 1px; }
   /* 과목 상세 — 반별 섹션 바 (버건디) */
+  /* 자료에 한 명도 없는 반(전원 미입력) — 회색 구획 */
+  .clsbar.none { background: linear-gradient(100deg, #4b4e59, #2b2d36 70%) !important; box-shadow: 0 4px 12px rgba(40,42,50,.2) !important; color: #cfd2da !important; }
+  .clsbar.none::before { background: rgba(255,255,255,.35) !important; }
+  .clsbar.none .cnt { color: #9fa3ae !important; }
+  .note-line { text-align: center; color: var(--faint); font-size: 12px; padding: 8px 0 2px; }
+  .mat2 .m-meta b.miss { color: #ffb4a8; }
+  .mat2 h3 .cls.all { color: #ffd98f; }
   .clsbar { margin: 22px 0 10px; border-radius: 13px; padding: 12px 18px; position: relative; overflow: hidden; color: #ebf0fb;
     background: linear-gradient(100deg, #24357c, #131e4a 70%); box-shadow: 0 6px 16px rgba(15,24,62,.2);
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -2076,6 +2083,47 @@ function clsCompress(classes) {
   });
   return [...byG].map(([g, ks]) => `${g}학년 ${ks.join('·')}반`).join(', ') || '반 미상';
 }
+// 학년 전 반을 포괄하면 "n학년 전체 학급"으로 표기
+function clsLabel(m) {
+  if (m.grade != null && m.classes.size >= 2 && state.gradeClasses && state.gradeClasses[m.grade]) {
+    const all = state.gradeClasses[m.grade];
+    if (all.size >= 2 && [...all].every(c => m.classes.has(c))) return `<span class="all">${m.grade}학년 전체 학급</span>`;
+  }
+  return clsCompress(m.classes);
+}
+// 편제(교사배정·수강명단·미입력 검사) 기준 반별 정보: classCode → { enrolled, teacher }
+function clsInfoFor(m) {
+  const map = new Map();
+  if (state.setting && state.setting.teachers) {
+    for (const t of state.setting.teachers) {
+      if (t.grade === m.grade && t.norm === m.norm) for (const c of t.classes) {
+        const e = map.get(c) || { enrolled: 0, teacher: '' };
+        if (t.teacher && !e.teacher.includes(t.teacher)) e.teacher = e.teacher ? e.teacher + ', ' + t.teacher : t.teacher;
+        map.set(c, e);
+      }
+    }
+  }
+  if (state.setting && state.setting.roster) {
+    for (const r of state.setting.roster) {
+      if (r.norm === m.norm && r.classCode && +r.classCode[0] === m.grade) {
+        const e = map.get(r.classCode) || { enrolled: 0, teacher: '' };
+        e.enrolled++;
+        map.set(r.classCode, e);
+      }
+    }
+  }
+  if (state.res && state.res.missing) {
+    for (const r0 of state.res.missing.subjects) {
+      if (r0.grade === m.grade && r0.norm === m.norm && r0.classCode) {
+        const e = map.get(r0.classCode) || { enrolled: 0, teacher: '' };
+        if (r0.enrolled > e.enrolled) e.enrolled = r0.enrolled;
+        if (!e.teacher && r0.teacher) e.teacher = r0.teacher;
+        map.set(r0.classCode, e);
+      }
+    }
+  }
+  return map;
+}
 function buildMats() {
   // 반별로 카드를 분리 — 여러 반 파일을 올리면 과목·창체·행특 카드가 반마다 따로 생김
   const mats = [];
@@ -2178,16 +2226,41 @@ function buildMats() {
     mats.push({ kind: '행동특성', cls: 'cc', name: '행동특성·종합의견', norm: '__ht__',
       classes: new Set(cc === '?' ? [] : [cc]), writers: new Set(studs.map(x => x.sid)) });
   }
+  // 학년별 전체 반 목록 (편제·명단·자료 합산) — "전체 학급" 표기 판단용
+  const allByGrade = {};
+  const addG = (g, c) => { if (g != null && c) (allByGrade[g] = allByGrade[g] || new Set()).add(c); };
+  if (state.setting && state.setting.teachers) for (const t of state.setting.teachers) for (const c of t.classes) addG(t.grade, c);
+  if (state.setting && state.setting.roster) for (const r of state.setting.roster) if (r.classCode) addG(+r.classCode[0], r.classCode);
+  for (const st of state.students) addG(st.grade, st.classCode);
+  state.gradeClasses = allByGrade;
+  // 교과 카드: 편제상 개설 반을 모두 카드 범위에 포함 + 자료가 전혀 없는 반(전원 미입력) 산출
+  for (const m of mats) {
+    if (m.kind !== '교과 세특' || m.grade == null) continue;
+    m.clsInfo = clsInfoFor(m);
+    for (const c of m.clsInfo.keys()) m.classes.add(c);
+    const p = matPred(m);
+    const dataCls = new Set(state.students.filter(st => st.entries.some(p)).map(st => st.classCode));
+    m.missCls = [...m.classes].filter(c => !dataCls.has(c)).sort();
+  }
   // 정렬: 반 → 세특 과목(가나다) → 창체 → 행특
   const rank = m => m.norm === '__cc__' ? 1 : (m.norm === '__ht__' ? 2 : 0);
   mats.sort((a, b) => {
-    const ca = [...a.classes][0] || '', cb = [...b.classes][0] || '';
+    const ca = [...a.classes].sort()[0] || '', cb = [...b.classes].sort()[0] || '';
     return ca.localeCompare(cb) || (rank(a) - rank(b)) || a.name.localeCompare(b.name);
   });
   for (const m of mats) {
     m.classStuds = state.students.filter(st => m.classes.size === 0 || m.classes.has(st.classCode));
     m.total = m.classStuds.length;
+    // 편제·명단 기준 학생 수 합 (모르는 반은 자료 인원으로 보충)
+    if (m.clsInfo && m.clsInfo.size) {
+      m.pyEnrolled = [...m.classes].reduce((a, c) => {
+        const info = m.clsInfo.get(c);
+        const dataN = state.students.filter(st => st.classCode === c).length;
+        return a + Math.max(info ? info.enrolled : 0, dataN);
+      }, 0);
+    }
     m.iss = matIssues(m);
+    if (m.missCls && m.missCls.length) m.iss.missCls = m.missCls;
     // 담당교사: 카드에는 편제상 이 학년·과목의 담당 전원을 표시 (반별 담당은 상세의 반 구획에서 구분)
     if (m.kind === '교과 세특' && m.grade != null && state.setting && state.setting.teachers) {
       for (const t of state.setting.teachers) {
@@ -2199,6 +2272,7 @@ function buildMats() {
 }
 function matChips(iss) {
   const i = iss, out = [];
+  if ((i.missCls || []).length) out.push(`<span class="hot">미입력 반 ${i.missCls.length}</span>`);
   const ban = i.f.filter(x => x.rule.grade === '금지').length, warn = i.f.length - ban;
   if (ban) out.push(`<span class="hot">기재금지 ${ban}</span>`);
   if (warn) out.push(`<span class="warm">주의 ${warn}</span>`);
@@ -2223,7 +2297,7 @@ function renderDash() {
   // 담당교사가 많으면 이름 글자를 자동 축소 (배지 줄바꿈 방지)
   const tchsCls = names => names.length > 18 ? ' xs' : (names.length > 10 ? ' sm' : '');
   const matCard = (m, i) => {
-    const classes = clsCompress(m.classes);
+    const classes = clsLabel(m);
     if (m.ghost) {
       const gNames = [...m.teachers].join(', ');
       const tchRow = m.teachers.size ? `<span class="tchs${tchsCls(gNames)}"><i>담당교사</i>${esc(gNames)}</span>` : '';
@@ -2231,16 +2305,18 @@ function renderDash() {
         <span class="z" style="display:block">
           <span class="kindrow"><span class="kind">${m.kind}</span>${tchRow}</span>
           <h3><span class="nm">${esc(m.name)}</span><span class="cls">${classes}</span></h3>
-          <span class="m-meta" style="display:block">학생 ${m.ghostEnrolled}명 · 작성 <b>0명</b></span>
+          <span class="m-meta" style="display:block">학생 ${m.pyEnrolled || m.ghostEnrolled}명 · 작성 <b>0명</b></span>
           <span class="rule2" style="display:flex"></span>
           <span class="chips" style="display:flex"><span class="badge-miss">전원 미입력</span></span>
         </span>
         <span class="go">→</span>
       </button>`;
     }
+    const missN = (m.missCls || []).length;
     const meta = m.norm === '__cc__'
       ? `${(m.areasList || []).join(' · ')}${m.iss.blanks.length ? ' · 미작성 <b>' + m.iss.blanks.length + '명</b>' : ''}`
-      : (m.norm === '__ht__' ? `학생 ${m.total}명` : `학생 ${m.total}명 · 작성 <b>${m.writers.size}명</b>`);
+      : (m.norm === '__ht__' ? `학생 ${m.total}명`
+        : `학생 ${m.pyEnrolled || m.total}명 · 작성 <b${missN ? ' class="miss"' : ''}>${m.writers.size}명</b>${missN ? ` · 반 ${m.classes.size - missN}/${m.classes.size}` : ''}`);
     const nNames = m.teachers && m.teachers.size ? [...m.teachers].join(', ') : '';
     const tchRow = m.isJoint
       ? `<span class="tchs">공동교육과정</span>`
@@ -2274,8 +2350,8 @@ function renderDash() {
     const allG3 = subjIdx.length > 0 && subjIdx.every(i => state.mats[i].grade === 3);
     if (!state.accOpen) state.accOpen = new Set();
     const groupChips = idxs => {
-      const merged = { f: [], l: [], sty: [], ty: [], end: [], sim: [], blanks: [] };
-      idxs.forEach(i => { const x = state.mats[i].iss; Object.keys(merged).forEach(k => merged[k].push(...x[k])); });
+      const merged = { f: [], l: [], sty: [], ty: [], end: [], sim: [], blanks: [], missCls: [] };
+      idxs.forEach(i => { const x = state.mats[i].iss; Object.keys(merged).forEach(k => merged[k].push(...(x[k] || []))); });
       return matChips(merged);
     };
     const accSec = (key, label, cntText, idxs, green) => {
@@ -2397,10 +2473,10 @@ function renderDash() {
 }
 function renderMatDetail(m) {
   const L = NEISCheck.LIMITS;
-  const classes = clsCompress(m.classes);
+  const classes = clsLabel(m);
   let meta;
   if (m.norm === '__cc__' || m.norm === '__ht__') meta = `${classes} · 학생 ${m.total}명`;
-  else meta = `${classes} · 학생 ${m.total}명 · 작성 <b>${m.writers.size}명</b>`;
+  else meta = `${classes} · 학생 ${m.pyEnrolled || m.total}명 · 작성 <b>${m.writers.size}명</b>`;
   const bannerTch = m.isJoint
     ? `<span class="tchs2">공동교육과정</span>`
     : (m.teachers && m.teachers.size ? `<span class="tchs2"><i>담당교사</i>${esc([...m.teachers].join(', '))}</span>` : '');
@@ -2519,21 +2595,34 @@ function renderMatDetail(m) {
       }
     }
   } else if (m.ghost) {
-    // 미입력 과목: 반별 현황만
-    const rows = state.res.missing.subjects.filter(x => x.grade === m.grade && x.norm === m.norm);
-    for (const r0 of rows) {
-      html += `<div class="clsbar"><span class="nm">${fmtClass(r0.classCode)}</span>
-        <span class="cnt">작성 0/${r0.enrolled}명${r0.teacher ? ' · ' + esc(r0.teacher) + ' 선생님' : ''}${r0.isWait ? ' · 반 전체 기준' : ''}</span>
-        <span class="achips"><span class="hot">전원 미입력</span></span></div>`;
+    // 미입력 과목: 반별 현황만 (편제 기준 반 전체)
+    for (const cc of [...m.classes].sort()) {
+      const info = (m.clsInfo && m.clsInfo.get(cc)) || { enrolled: 0, teacher: '' };
+      const dataN = state.students.filter(st => st.classCode === cc).length;
+      const enr = Math.max(info.enrolled, dataN);
+      html += `<div class="clsbar none"><span class="nm">${fmtClass(cc)}</span>
+        <span class="cnt">${enr ? `학생 ${enr}명` : '인원 미상'}${info.teacher ? ' · ' + esc(info.teacher) + ' 선생님' : ''}</span>
+        <span class="achips"><span class="badge-miss">전원 미입력</span></span></div>`;
     }
     html += '<div class="empty"><div class="big">📝</div>아직 작성된 세특이 없는 과목입니다. 담당 선생님께 입력을 안내해 주세요.</div>';
   } else if (m.norm === '__ht__') {
     const items = issueItems(m.iss, true);
     html += items.length ? items.join('') : '<div class="empty"><div class="big">✅</div>이 자료에서는 지적 사항이 없습니다.</div>';
   } else {
-    // 교과: 반별 구획 + 반별 기재 내용 보기
+    // 교과: 반별 구획 + 반별 기재 내용 보기 (자료 없는 반은 회색 '전원 미입력' 구획)
     const ccs = [...m.classes].sort();
+    let hasNone = false;
     for (const cc of ccs) {
+      if (m.missCls && m.missCls.includes(cc)) {
+        const info = (m.clsInfo && m.clsInfo.get(cc)) || { enrolled: 0, teacher: '' };
+        const dataN = state.students.filter(st => st.classCode === cc).length;
+        const enr = Math.max(info.enrolled, dataN);
+        html += `<div class="clsbar none"><span class="nm">${fmtClass(cc)}</span>
+          <span class="cnt">${enr ? `학생 ${enr}명` : '인원 미상'}${info.teacher ? ' · ' + esc(info.teacher) + ' 선생님' : ''}</span>
+          <span class="achips"><span class="badge-miss">전원 미입력</span></span></div>`;
+        hasNone = true;
+        continue;
+      }
       const inCls = st => st.classCode === cc;
       const sub = {
         f: m.iss.f.filter(x => inCls(x.st)),
@@ -2578,6 +2667,7 @@ function renderMatDetail(m) {
           <div class="aview" id="${aid}"></div>`;
       }
     }
+    if (hasNone) html += `<div class="note-line">미입력 반은 세특이 아직 입력되지 않았거나, 그 반 파일을 아직 올리지 않은 경우입니다</div>`;
   }
   $('#panel-dash').innerHTML = html;
   $('#mat-back').onclick = () => {
