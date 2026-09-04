@@ -2188,11 +2188,10 @@ function buildMats() {
     m.classStuds = state.students.filter(st => m.classes.size === 0 || m.classes.has(st.classCode));
     m.total = m.classStuds.length;
     m.iss = matIssues(m);
-    // 담당교사 보강: 기록의 과목명이 편제와 달라(전적교 기록 흡수 등) 주석이 안 붙은 카드도 편제에서 직접 교사를 가져옴
+    // 담당교사: 카드에는 편제상 이 학년·과목의 담당 전원을 표시 (반별 담당은 상세의 반 구획에서 구분)
     if (m.kind === '교과 세특' && m.grade != null && state.setting && state.setting.teachers) {
       for (const t of state.setting.teachers) {
-        if (t.grade === m.grade && t.norm === m.norm && (!t.classes.length || !m.classes.size || [...m.classes].some(c => t.classes.includes(c))))
-          m.teachers.add(t.teacher);
+        if (t.grade === m.grade && t.norm === m.norm) m.teachers.add(t.teacher);
       }
     }
   }
